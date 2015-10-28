@@ -5,6 +5,7 @@ nobase_dist_pkgdata_DATA =							\
 	unstable/presentation-timing/presentation-timing-unstable-v1.xml	\
 	unstable/text-input/text-input-unstable-v1.xml				\
 	unstable/input-method/input-method-unstable-v1.xml			\
+	unstable/wayland-tablet/wayland-tablet-unstable-v1.xml			\
 	$(NULL)
 
 pkgconfigdir = $(libdir)/pkgconfig
