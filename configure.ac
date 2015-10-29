@@ -19,6 +19,12 @@ AC_SUBST([WAYLAND_PROTOCOLS_VERSION], [wayland_protocols_version])
 
 AM_INIT_AUTOMAKE([1.11 foreign no-dist-gzip dist-xz])
 
+AC_PATH_PROG([wayland_scanner], [wayland-scanner])
+if test x$wayland_scanner = x; then
+        PKG_CHECK_MODULES(WAYLAND_SCANNER, [wayland-scanner])
+        wayland_scanner=`$PKG_CONFIG --variable=wayland_scanner wayland-scanner`
+fi
+
 AM_SILENT_RULES([yes])
 
 PKG_PROG_PKG_CONFIG()
