@@ -184,7 +184,7 @@
 	runtime, and the client must wait for wp_tablet_pad.enter to know
 	the tablet a pad is attached to.
 
-	This event only provides the object id of the pad, and any further
+	This event only provides the object id of the pad; and all further
 	features (buttons, strips, rings) are sent through the wp_tablet_pad
 	interface.
       </description>
@@ -666,20 +666,19 @@
 
     <request name="set_feedback" since="2">
       <description summary="set compositor feedback">
-	Requests the compositor to use the provided feedback UTF-8 encoded
-	string associated with this ring.
+	Request that the compositor use the provided feedback string
+	associated with this ring. This request should be issued immediately
+	after a wp_tablet_pad.enter, or whenever the ring is mapped to a
+	different action.
 
 	Clients are encouraged to provide context-aware descriptions for
-	the actions associated with the ring, compositors may use this
+	the actions associated with the ring; compositors may use this
 	information to offer visual feedback about the button layout
 	(eg. on-screen displays).
 
-	The string offered is considered user-visible; general
+	The provided string 'description' is an UTF-8 encoded string to be
+	associated with this ring, and is considered user visible; general
 	internationalization rules apply.
-
-	This request should be issued immediately after a
-	wp_tablet_pad.enter, or whenever the ring is mapped to a different
-	action.
       </description>
       <arg name="description" type="string" summary="ring description"/>
     </request>
@@ -776,20 +775,19 @@
 
     <request name="set_feedback" since="2">
       <description summary="set compositor feedback">
-	Requests the compositor to use the provided feedback UTF-8 encoded
-	string associated with this strip.
+	Requests the compositor to use the provided feedback string
+	associated with this strip. This request should be issued
+	immediately after a wp_tablet_pad.enter, or whenever the strip is
+	mapped to a different action.
 
 	Clients are encouraged to provide context-aware descriptions for
 	the actions associated with the strip, compositors may use this
 	information to offer visual feedback about the button layout
 	(eg. on-screen displays).
 
-	The string offered is considered user-visible; general
+	The provided string 'description' is an UTF-8 encoded string to be
+	associated with this ring, and is considered user visible; general
 	internationalization rules apply.
-
-	This request should be issued immediately after a
-	wp_tablet_pad.enter, or whenever the strip is mapped to a different
-	action.
       </description>
       <arg name="description" type="string" summary="strip description"/>
     </request>
@@ -895,20 +893,19 @@
 
     <request name="set_feedback" since="2">
       <description summary="set compositor feedback">
-	Requests the compositor to use the provided feedback UTF-8 encoded
-	string associated with this button.
+	Requests the compositor to use the provided feedback string
+	associated with this button. This request should be issued
+	immediately after a wp_tablet_pad.enter event or whenever a button
+	is mapped to a different action.
 
 	Clients are encouraged to provide context-aware descriptions for
 	the actions associated with each button, and compositors may use
 	this information to offer visual feedback on the button layout
 	(e.g. on-screen displays).
 
-	The feedback string is considered user-visible; general
+	The provided string 'description' is an UTF-8 encoded string to be
+	associated with this ring, and is considered user visible; general
 	internationalization rules apply.
-
-	This request should be issued immediately after a
-	wp_tablet_pad.enter event or whenever a button is mapped to a
-	different action.
       </description>
       <arg name="button" type="uint" summary="button code"/>
       <arg name="description" type="string" summary="button description"/>
@@ -1049,7 +1046,7 @@
     <event name="removed" since="2">
       <description summary="pad removed event">
 	Sent when the pad has been removed from the system. When a tablet
-	is removed, its pad(s) will be removed too.
+	is removed its pad(s) will be removed too.
 
 	When this event is received, the client must wp_tablet_pad.destroy
 	the object, and wp_tablet_pad_strip.destroy/wp_tablet_pad_ring.destroy
