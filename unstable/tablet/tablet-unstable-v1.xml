@@ -746,9 +746,9 @@
 
     <event name="frame" since="2">
       <description summary="end of a ring event sequence">
-	Indicates the end of a set of events that logically belong together.
-	A client is expected to accumulate the data in all events within the
-	frame before proceeding.
+	Indicates the end of a set of ring events that logically belong
+	together. A client is expected to accumulate the data in all events
+	within the frame before proceeding.
 
 	All wp_tablet_pad_ring events before a wp_tablet_pad_ring.frame event belong
 	logically together. For example, on termination of a finger interaction
@@ -830,7 +830,7 @@
       <description summary="position changed">
 	Sent whenever the position on a strip changes.
 
-	The position is normalized to a range of [0, 0xFFFF], the 0-value
+	The position is normalized to a range of [0, 65535], the 0-value
 	represents the top-most and/or left-most position of the strip in
 	the pad's current rotation.
       </description>
@@ -855,9 +855,9 @@
 
     <event name="frame" since="2">
       <description summary="end of a strip event sequence">
-	Indicates the end of a set of events that logically belong together.
-	A client is expected to accumulate the data in all events within the
-	frame before proceeding.
+	Indicates the end of a set of events that represent one logical
+	hardware strip event. A client is expected to accumulate the data
+	in all events within the frame before proceeding.
 
 	All wp_tablet_pad_strip events before a wp_tablet_pad_strip.frame event belong
 	logically together. For example, on termination of a finger interaction
@@ -949,6 +949,8 @@
 
 	This event is sent in the initial burst of events before the
 	wp_tablet_tool.done event.
+
+	FIXME: change to a num_buttons event
       </description>
       <arg name="buttons" type="array" summary="the available buttons"/>
     </event>
