@@ -924,7 +924,7 @@
 	One event is sent for each ring available on this pad.
 
 	This event is sent in the initial burst of events before the
-	wp_tablet_tool.done event.
+	wp_tablet_pad.done event.
       </description>
       <arg name="ring" type="new_id" interface="zwp_tablet_seat_ring_v1"/>
     </event>
@@ -935,7 +935,7 @@
 	One event is sent for each strip available on this pad.
 
 	This event is sent in the initial burst of events before the
-	wp_tablet_tool.done event.
+	wp_tablet_pad.done event.
       </description>
       <arg name="strip" type="new_id" interface="zwp_tablet_seat_strip_v1"/>
     </event>
@@ -948,7 +948,7 @@
 	to switch between modes, if any).
 
 	This event is sent in the initial burst of events before the
-	wp_tablet_tool.done event.
+	wp_tablet_pad.done event.
 
 	FIXME: change to a num_buttons event
       </description>
@@ -966,7 +966,7 @@
 	event for more details.
 
 	This event is sent in the initial burst of events before the
-	wp_tablet_tool.done event.
+	wp_tablet_pad.done event.
       </description>
       <arg name="buttons" type="array" summary="the available buttons"/>
     </event>
