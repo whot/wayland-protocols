@@ -956,7 +956,7 @@
     </event>
 
     <event name="modes" since="2">
-      <description summary="buttons announced">
+      <description summary="mode-switch ability announced">
 	Sent on wp_tablet_pad initialization to announce that the pad
 	may switch between modes. A client may use a mode to store a
 	specific configuration for buttons, rings and strips and use the
@@ -968,7 +968,7 @@
 	This event is sent in the initial burst of events before the
 	wp_tablet_pad.done event.
       </description>
-      <arg name="buttons" type="array" summary="the available buttons"/>
+      <arg name="modes" type="uint" summary="the number of modes"/>
     </event>
 
     <event name="done" since="2">
