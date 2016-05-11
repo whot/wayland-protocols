@@ -897,11 +897,16 @@
 	this information to offer visual feedback on the button layout
 	(e.g. on-screen displays).
 
+	Button indices start at 0. Setting the feedback string on a button
+	that is reserved by the compositor (see
+	wp_tablet_pad.buttons_reserved) does not generate an error but the
+	compositor is free to ignore such a feedback string.
+
 	The provided string 'description' is an UTF-8 encoded string to be
 	associated with this ring, and is considered user visible; general
 	internationalization rules apply.
       </description>
-      <arg name="button" type="uint" summary="button code"/>
+      <arg name="button" type="uint" summary="button index"/>
       <arg name="description" type="string" summary="button description"/>
     </request>
 
