@@ -945,7 +945,7 @@
 	wp_tablet_pad.done event. This event is only sent when at least one
 	button is available.
       </description>
-      <arg name="buttons" type="int" summary="the number of buttons"/>
+      <arg name="buttons" type="uint" summary="the number of buttons"/>
     </event>
 
     <event name="buttons_reserved">
