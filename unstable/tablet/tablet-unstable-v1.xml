@@ -926,7 +926,7 @@
 	This event is sent in the initial burst of events before the
 	wp_tablet_pad.done event.
       </description>
-      <arg name="ring" type="new_id" interface="zwp_tablet_seat_ring_v1"/>
+      <arg name="ring" type="new_id" interface="zwp_tablet_pad_ring_v1"/>
     </event>
 
     <event name="strip" since="2">
@@ -937,7 +937,7 @@
 	This event is sent in the initial burst of events before the
 	wp_tablet_pad.done event.
       </description>
-      <arg name="strip" type="new_id" interface="zwp_tablet_seat_strip_v1"/>
+      <arg name="strip" type="new_id" interface="zwp_tablet_pad_strip_v1"/>
     </event>
 
     <event name="buttons" since="2">
