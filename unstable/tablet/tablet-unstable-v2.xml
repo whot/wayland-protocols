@@ -524,9 +524,9 @@
       <description summary="Wheel delta event">
 	Sent whenever the wheel on the tool emits an event. This event
 	contains two values for the same axis change. The degrees value is
-	in degrees in the same orientation as the wl_pointer.vertical_scroll
-	axis. The clicks value is in discrete logical clicks of the mouse
-	wheel. This value may be zero if the movement of the wheel was less
+	in the same orientation as the wl_pointer.vertical_scroll axis. The
+	clicks value is in discrete logical clicks of the mouse wheel. This
+	value may be zero if the movement of the wheel was less
 	than one logical click.
 
 	Clients should choose either value and avoid mixing degrees and
