@@ -721,10 +721,10 @@
       <description summary="angle changed">
 	Sent whenever the angle on a ring changes.
 
-	The angle is provided in 0.01 of a degree clockwise from the logical
+	The angle is provided in degrees clockwise from the logical
 	north of the ring in the pad's current rotation.
       </description>
-      <arg name="angle" type="uint" summary="the current angle"/>
+      <arg name="angle" type="fixed" summary="the current angle"/>
     </event>
 
     <event name="stop" since="2">
