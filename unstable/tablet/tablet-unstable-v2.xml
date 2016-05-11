@@ -737,7 +737,6 @@
 	Any wp_tablet_pad_ring.angle events with the same source after this
 	event should be considered as the start of a new interaction.
       </description>
-      <arg name="source" type="uint" enum="source" summary="the event source"/>
     </event>
 
     <event name="frame">
@@ -846,7 +845,6 @@
 	Any wp_tablet_pad_strip.position events with the same source after this
 	event should be considered as the start of a new interaction.
       </description>
-      <arg name="source" type="uint" enum="source" summary="the event source"/>
     </event>
 
     <event name="frame">
