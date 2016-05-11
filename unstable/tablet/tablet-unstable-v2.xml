@@ -172,6 +172,22 @@
       </description>
       <arg name="id" type="new_id" interface="zwp_tablet_tool_v2" summary="the newly added tablet tool"/>
     </event>
+
+    <event name="pad_added">
+      <description summary="new pad notification">
+	This event is sent whenever a new pad is known to the system. Typically,
+	pads are physically attached to tablets and a pad_added event is
+	sent immediately after the wp_tablet_seat.tablet_added.
+	However, some standalone pad devices logically attach to tablets at
+	runtime, and the client must wait for wp_tablet_pad.enter to know
+	the tablet a pad is attached to.
+
+	This event only provides the object id of the pad; and all further
+	features (buttons, strips, rings) are sent through the wp_tablet_pad
+	interface.
+      </description>
+      <arg name="id" type="new_id" interface="zwp_tablet_pad_v2" summary="the newly added pad"/>
+    </event>
   </interface>
 
   <interface name="zwp_tablet_tool_v2" version="1">
@@ -632,6 +648,426 @@
 
 	When this event is received, the client must wp_tablet.destroy
 	the object.
+      </description>
+    </event>
+  </interface>
+
+  <interface name="zwp_tablet_pad_ring_v2" version="1">
+    <description summary="pad ring">
+      A circular interaction area.
+
+      Events on a ring are logically grouped by the wl_tablet_pad_ring.frame
+      event.
+    </description>
+
+    <request name="set_feedback">
+      <description summary="set compositor feedback">
+	Request that the compositor use the provided feedback string
+	associated with this ring. This request should be issued immediately
+	after a wp_tablet_pad.enter, or whenever the ring is mapped to a
+	different action.
+
+	Clients are encouraged to provide context-aware descriptions for
+	the actions associated with the ring; compositors may use this
+	information to offer visual feedback about the button layout
+	(eg. on-screen displays).
+
+	The provided string 'description' is an UTF-8 encoded string to be
+	associated with this ring, and is considered user visible; general
+	internationalization rules apply.
+      </description>
+      <arg name="description" type="string" summary="ring description"/>
+    </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the ring object">
+	This destroys the client's resource for this ring object.
+      </description>
+    </request>
+
+    <enum name="source">
+      <description summary="ring axis source">
+	Describes the source types for ring events. This indicates to the
+	client how a ring event was physically generated; a client may
+	adjust the user interface accordingly. For example, events
+	from a "finger" source may trigger kinetic scrolling.
+      </description>
+      <entry name="finger" value="1" summary="finger"/>
+    </enum>
+
+    <event name="source">
+      <description summary="ring event source">
+	Source information for ring events.
+
+	This event does not occur on its own. It is sent before a
+	wp_tablet_pad_ring.frame event and carries the source information
+	for all events within that frame.
+
+	The source specifies how this event was generated. If the source is
+	wp_tablet_pad_ring.source.finger, a wp_tablet_pad_ring.stop event
+	will be sent when the user lifts the finger off the device.
+
+	This event is optional. If the source is unknown for an interaction,
+	no event is sent.
+      </description>
+      <arg name="source" type="uint" summary="the event source"/>
+    </event>
+
+    <event name="angle">
+      <description summary="angle changed">
+	Sent whenever the angle on a ring changes.
+
+	The angle is provided in degrees clockwise from the logical
+	north of the ring in the pad's current rotation.
+      </description>
+      <arg name="degrees" type="fixed" summary="the current angle in degrees"/>
+    </event>
+
+    <event name="stop">
+      <description summary="interaction stopped">
+	Stop notification for ring events.
+
+	For some wp_tablet_pad_ring.source types, a wp_tablet_pad_ring.stop
+	event is sent to notify a client that the interaction with the ring
+	has terminated.
+	This enables the client to implement kinetic scrolling.
+	See the wp_tablet_pad_ring.source documentation for information on
+	when this event may be generated.
+
+	Any wp_tablet_pad_ring.angle events with the same source after this
+	event should be considered as the start of a new interaction.
+      </description>
+      <arg name="source" type="uint" enum="source" summary="the event source"/>
+    </event>
+
+    <event name="frame">
+      <description summary="end of a ring event sequence">
+	Indicates the end of a set of ring events that logically belong
+	together. A client is expected to accumulate the data in all events
+	within the frame before proceeding.
+
+	All wp_tablet_pad_ring events before a wp_tablet_pad_ring.frame event belong
+	logically together. For example, on termination of a finger interaction
+	on a ring the compositor will send a wp_tablet_pad_ring.source event,
+	a wp_tablet_pad_ring.stop event and a wp_tablet_pad_ring.frame
+	event.
+
+	A wp_tablet_pad_ring.frame event is sent for every logical event
+	group, even if the group only contains a single wp_tablet_pad_ring
+	event.  Specifically, a client may get a sequence: angle, frame,
+	angle, frame, etc.
+      </description>
+      <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
+    </event>
+  </interface>
+
+  <interface name="zwp_tablet_pad_strip_v2" version="2">
+    <description summary="pad strip">
+      A linear interaction area.
+
+      Events on a strip are logically grouped by the wl_tablet_pad_strip.frame
+      event.
+    </description>
+
+    <request name="set_feedback">
+      <description summary="set compositor feedback">
+	Requests the compositor to use the provided feedback string
+	associated with this strip. This request should be issued
+	immediately after a wp_tablet_pad.enter, or whenever the strip is
+	mapped to a different action.
+
+	Clients are encouraged to provide context-aware descriptions for
+	the actions associated with the strip, compositors may use this
+	information to offer visual feedback about the button layout
+	(eg. on-screen displays).
+
+	The provided string 'description' is an UTF-8 encoded string to be
+	associated with this ring, and is considered user visible; general
+	internationalization rules apply.
+      </description>
+      <arg name="description" type="string" summary="strip description"/>
+    </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the strip object">
+	This destroys the client's resource for this strip object.
+      </description>
+    </request>
+
+    <enum name="source">
+      <description summary="strip axis source">
+	Describes the source types for strip events. This indicates to the
+	client how a strip event was physically generated; a client may
+	adjust the user interface accordingly. For example, events
+	from a "finger" source may trigger kinetic scrolling.
+      </description>
+      <entry name="finger" value="1" summary="finger"/>
+    </enum>
+
+    <event name="source">
+      <description summary="strip event source">
+	Source information for strip events.
+
+	This event does not occur on its own. It is sent before a
+	wp_tablet_pad_strip.frame event and carries the source information
+	for all events within that frame.
+
+	The source specifies how this event was generated. If the source is
+	wp_tablet_pad_strip.source.finger, a wp_tablet_pad_strip.stop event
+	will be sent when the user lifts their finger off the device.
+
+	This event is optional. If the source is unknown for an interaction,
+	no event is sent.
+      </description>
+      <arg name="source" type="uint" summary="the event source"/>
+    </event>
+
+    <event name="position">
+      <description summary="position changed">
+	Sent whenever the position on a strip changes.
+
+	The position is normalized to a range of [0, 65535], the 0-value
+	represents the top-most and/or left-most position of the strip in
+	the pad's current rotation.
+      </description>
+      <arg name="position" type="uint" summary="the current position"/>
+    </event>
+
+    <event name="stop">
+      <description summary="interaction stopped">
+	Stop notification for strip events.
+
+	For some wp_tablet_pad_strip.source types, a wp_tablet_pad_strip.stop
+	event is sent to notify a client that the interaction with the strip
+	has terminated. This enables the client to implement kinetic
+	scrolling.  See the wp_tablet_pad_strip.source documentation for
+	information on when this event may be generated.
+
+	Any wp_tablet_pad_strip.position events with the same source after this
+	event should be considered as the start of a new interaction.
+      </description>
+      <arg name="source" type="uint" enum="source" summary="the event source"/>
+    </event>
+
+    <event name="frame">
+      <description summary="end of a strip event sequence">
+	Indicates the end of a set of events that represent one logical
+	hardware strip event. A client is expected to accumulate the data
+	in all events within the frame before proceeding.
+
+	All wp_tablet_pad_strip events before a wp_tablet_pad_strip.frame event belong
+	logically together. For example, on termination of a finger interaction
+	on a strip the compositor will send a wp_tablet_pad_strip.source event,
+	a wp_tablet_pad_strip.stop event and a wp_tablet_pad_strip.frame
+	event.
+
+	A wp_tablet_pad_strip.frame event is sent for every logical event
+	group, even if the group only contains a single wp_tablet_pad_strip
+	event.  Specifically, a client may get a sequence: position, frame,
+	position, frame, etc.
+      </description>
+      <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
+    </event>
+  </interface>
+
+  <interface name="zwp_tablet_pad_v2" version="2">
+    <description summary="a set of buttons, rings and strips">
+      A pad device is a set of buttons, rings and strips
+      usually physically present on the tablet device itself. Some
+      exceptions exist where the pad device is physically detached, e.g. the
+      Wacom ExpressKey Remote.
+
+      Pad devices have no axes that control the cursor and are generally
+      auxiliary devices to the tool devices used on the tablet surface.
+
+      A pad device has a number of static characteristics, e.g. the number
+      of rings. These capabilities are sent in an event sequence after the
+      wp_tablet_seat.pad_added event before any actual events from this pad.
+      This initial event sequence is terminated by a wp_tablet_pad.done
+      event.
+    </description>
+
+    <request name="set_feedback">
+      <description summary="set compositor feedback">
+	Requests the compositor to use the provided feedback string
+	associated with this button. This request should be issued
+	immediately after a wp_tablet_pad.enter event or whenever a button
+	is mapped to a different action.
+
+	Clients are encouraged to provide context-aware descriptions for
+	the actions associated with each button, and compositors may use
+	this information to offer visual feedback on the button layout
+	(e.g. on-screen displays).
+
+	The provided string 'description' is an UTF-8 encoded string to be
+	associated with this ring, and is considered user visible; general
+	internationalization rules apply.
+      </description>
+      <arg name="button" type="uint" summary="button code"/>
+      <arg name="description" type="string" summary="button description"/>
+    </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the pad object">
+	Destroy the wp_tablet_pad object. Objects created from this object
+	are unaffected and should be destroyed separately.
+      </description>
+    </request>
+
+    <event name="ring">
+      <description summary="ring announced">
+	Sent on wp_tablet_pad initialization to announce available rings.
+	One event is sent for each ring available on this pad.
+
+	This event is sent in the initial burst of events before the
+	wp_tablet_pad.done event. This event is only sent when at least one
+	ring is available.
+      </description>
+      <arg name="ring" type="new_id" interface="zwp_tablet_pad_ring_v2"/>
+    </event>
+
+    <event name="strip">
+      <description summary="strip announced">
+	Sent on wp_tablet_pad initialization to announce available strips.
+	One event is sent for each strip available on this pad.
+
+	This event is sent in the initial burst of events before the
+	wp_tablet_pad.done event. This event is only sent when at least one
+	strip is available.
+      </description>
+      <arg name="strip" type="new_id" interface="zwp_tablet_pad_strip_v2"/>
+    </event>
+
+    <event name="buttons">
+      <description summary="buttons announced">
+	Sent on wp_tablet_pad initialization to announce the available
+	buttons.
+
+	This event is sent in the initial burst of events before the
+	wp_tablet_pad.done event. This event is only sent when at least one
+	button is available.
+      </description>
+      <arg name="buttons" type="int" summary="the number of buttons"/>
+    </event>
+
+    <event name="buttons_reserved">
+      <description summary="reserved button indices">
+	Sent on wp_tablet_pad initialization and/or at a later time to notify the
+	client of reserved buttons.
+
+	Compositors may consume some buttons for global actions, those
+	global actions will not trigger wl_tablet_pad.button events (e.g.
+	the button to switch between modes, if any). This event notifies the
+	client that some button indices are reserved by the compositor and
+	will not generate events visible to the client. Button indices start
+	at 0.
+
+	This event may is sent in the initial burst of events before the
+	wp_tablet_pad.done event and/or at any later time when the
+	compositor changes the list of reserved buttons. This event is only
+	sent when the compositor reserves at least one button.
+      </description>
+      <arg name="buttons_reserved" type="array" summary="the reserved button indices"/>
+    </event>
+
+    <event name="modes">
+      <description summary="mode-switch ability announced">
+	Sent on wp_tablet_pad initialization to announce that the pad
+	may switch between modes. A client may use a mode to store a
+	specific configuration for buttons, rings and strips and use the
+	wl_tablet_pad.mode event to toggle between these configurations.
+
+	Switching modes is compositor-dependent. See the wp_tablet_pad.mode
+	event for more details.
+
+	This event is sent in the initial burst of events before the
+	wp_tablet_pad.done event.
+      </description>
+      <arg name="modes" type="uint" summary="the number of modes"/>
+    </event>
+
+    <event name="done">
+      <description summary="pad description event sequence complete">
+	This event signals the end of the initial burst of descriptive
+	events. A client may consider the static description of the pad to
+	be complete and finalize initialization of the pad.
+      </description>
+    </event>
+
+    <enum name="button_state">
+      <description summary="physical button state">
+	Describes the physical state of a button which provoked the button
+	event.
+      </description>
+      <entry name="released" value="0" summary="the button is not pressed"/>
+      <entry name="pressed" value="1" summary="the button is pressed"/>
+    </enum>
+
+    <event name="button">
+      <description summary="physical button state">
+	Sent whenever the physical state of a button changes.
+      </description>
+      <arg name="time" type="uint" summary="the time of the event with millisecond granularity"/>
+      <arg name="button" type="uint" summary="button pressed"/>
+      <arg name="state" type="uint" enum="button_state"/>
+    </event>
+
+    <event name="mode">
+      <description summary="mode switch event">
+	Notification that the mode was switched.
+
+	A mode applies to all buttons, rings and strips but a client is not
+	required to assign different actions for each mode. For example, a
+	client may have mode-specific button mappings but map the ring to
+	vertical scrolling in all modes.
+
+	Switching modes is compositor-dependent. The compositor may provide
+	visual cues to the client about the mode, e.g. by toggling LEDs on
+	the tablet device. Mode-switching may be software-controlled or by
+	assigning one or more physical buttons. For example, on a Wacom
+	Intuos Pro, the button inside the ring may be assigned to switch
+	between modes.
+
+	If a button action in the new mode differs from the action in the
+	previous mode, the client should immediately issue a
+	wp_tablet_pad.set_feedback request for each changed button.
+
+	If a ring or button action in the new mode differs from the action
+	in the previous mode, the client should immediately issue a
+	wp_tablet_ring.set_feedback or wp_tablet_strip.set_feedback request
+	for each changed ring or strip.
+      </description>
+      <arg name="time" type="uint" summary="the time of the event with millisecond granularity"/>
+      <arg name="serial" type="uint"/>
+      <arg name="mode" type="uint" summary="the new mode of the pad"/>
+    </event>
+
+    <event name="enter">
+      <description summary="enter event">
+	Notification that this pad is focused on the specified surface.
+      </description>
+      <arg name="serial" type="uint"/>
+      <arg name="tablet" type="object" interface="zwp_tablet_v2" summary="the tablet the pad is attached to"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </event>
+
+    <event name="leave">
+      <description summary="enter event">
+	Notification that this pad is no longer focused on the specified
+	surface.
+      </description>
+      <arg name="serial" type="uint"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </event>
+
+    <event name="removed">
+      <description summary="pad removed event">
+	Sent when the pad has been removed from the system. When a tablet
+	is removed its pad(s) will be removed too.
+
+	When this event is received, the client must wp_tablet_pad.destroy
+	the object, and wp_tablet_pad_strip.destroy/wp_tablet_pad_ring.destroy
+	on all strips/rings offered by this pad.
       </description>
     </event>
   </interface>
