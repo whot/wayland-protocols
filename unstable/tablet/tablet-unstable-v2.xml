@@ -982,6 +982,7 @@
 	may switch between modes. A client may use a mode to store a
 	specific configuration for buttons, rings and strips and use the
 	wl_tablet_pad.mode event to toggle between these configurations.
+	Mode indices start at 0.
 
 	Switching modes is compositor-dependent. See the wp_tablet_pad.mode
 	event for more details.
@@ -1025,7 +1026,7 @@
 	A mode applies to all buttons, rings and strips but a client is not
 	required to assign different actions for each mode. For example, a
 	client may have mode-specific button mappings but map the ring to
-	vertical scrolling in all modes.
+	vertical scrolling in all modes. Mode indices start at 0.
 
 	Switching modes is compositor-dependent. The compositor may provide
 	visual cues to the client about the mode, e.g. by toggling LEDs on
