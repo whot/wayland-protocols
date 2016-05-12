@@ -182,7 +182,7 @@
 	runtime, and the client must wait for wp_tablet_pad.enter to know
 	the tablet a pad is attached to.
 
-	This event only provides the object id of the pad; and all further
+	This event only provides the object id of the pad. All further
 	features (buttons, strips, rings) are sent through the wp_tablet_pad
 	interface.
       </description>
@@ -672,8 +672,8 @@
 	information to offer visual feedback about the button layout
 	(eg. on-screen displays).
 
-	The provided string 'description' is an UTF-8 encoded string to be
-	associated with this ring, and is considered user visible; general
+	The provided string 'description' is a UTF-8 encoded string to be
+	associated with this ring, and is considered user-visible; general
 	internationalization rules apply.
       </description>
       <arg name="description" type="string" summary="ring description"/>
@@ -729,8 +729,7 @@
 
 	For some wp_tablet_pad_ring.source types, a wp_tablet_pad_ring.stop
 	event is sent to notify a client that the interaction with the ring
-	has terminated.
-	This enables the client to implement kinetic scrolling.
+	has terminated. This enables the client to implement kinetic scrolling.
 	See the wp_tablet_pad_ring.source documentation for information on
 	when this event may be generated.
 
@@ -748,12 +747,11 @@
 	All wp_tablet_pad_ring events before a wp_tablet_pad_ring.frame event belong
 	logically together. For example, on termination of a finger interaction
 	on a ring the compositor will send a wp_tablet_pad_ring.source event,
-	a wp_tablet_pad_ring.stop event and a wp_tablet_pad_ring.frame
-	event.
+	a wp_tablet_pad_ring.stop event and a wp_tablet_pad_ring.frame event.
 
 	A wp_tablet_pad_ring.frame event is sent for every logical event
 	group, even if the group only contains a single wp_tablet_pad_ring
-	event.  Specifically, a client may get a sequence: angle, frame,
+	event. Specifically, a client may get a sequence: angle, frame,
 	angle, frame, etc.
       </description>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
@@ -776,12 +774,12 @@
 	mapped to a different action.
 
 	Clients are encouraged to provide context-aware descriptions for
-	the actions associated with the strip, compositors may use this
+	the actions associated with the strip, and compositors may use this
 	information to offer visual feedback about the button layout
 	(eg. on-screen displays).
 
-	The provided string 'description' is an UTF-8 encoded string to be
-	associated with this ring, and is considered user visible; general
+	The provided string 'description' is a UTF-8 encoded string to be
+	associated with this ring, and is considered user-visible; general
 	internationalization rules apply.
       </description>
       <arg name="description" type="string" summary="strip description"/>
@@ -839,7 +837,7 @@
 	For some wp_tablet_pad_strip.source types, a wp_tablet_pad_strip.stop
 	event is sent to notify a client that the interaction with the strip
 	has terminated. This enables the client to implement kinetic
-	scrolling.  See the wp_tablet_pad_strip.source documentation for
+	scrolling. See the wp_tablet_pad_strip.source documentation for
 	information on when this event may be generated.
 
 	Any wp_tablet_pad_strip.position events with the same source after this
@@ -861,7 +859,7 @@
 
 	A wp_tablet_pad_strip.frame event is sent for every logical event
 	group, even if the group only contains a single wp_tablet_pad_strip
-	event.  Specifically, a client may get a sequence: position, frame,
+	event. Specifically, a client may get a sequence: position, frame,
 	position, frame, etc.
       </description>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
@@ -902,8 +900,8 @@
 	wp_tablet_pad.buttons_reserved) does not generate an error but the
 	compositor is free to ignore such a feedback string.
 
-	The provided string 'description' is an UTF-8 encoded string to be
-	associated with this ring, and is considered user visible; general
+	The provided string 'description' is a UTF-8 encoded string to be
+	associated with this ring, and is considered user-visible; general
 	internationalization rules apply.
       </description>
       <arg name="button" type="uint" summary="button index"/>
@@ -958,7 +956,7 @@
 	Sent on wp_tablet_pad initialization and/or at a later time to notify the
 	client of reserved buttons.
 
-	Compositors may consume some buttons for global actions, those
+	Compositors may consume some buttons for global actions and those
 	global actions will not trigger wl_tablet_pad.button events (e.g.
 	the button to switch between modes, if any). This event notifies the
 	client that some button indices are reserved by the compositor and
@@ -968,7 +966,7 @@
 	When the number of reserved buttons drops to zero, the
 	buttons_reserved array is an empty array.
 
-	This event may is sent in the initial burst of events before the
+	This event may be sent in the initial burst of events before the
 	wp_tablet_pad.done event and/or at any later time when the
 	compositor changes the list of reserved buttons. This event is only
 	sent when the compositor reserves at least one button.
@@ -1003,7 +1001,7 @@
 
     <enum name="button_state">
       <description summary="physical button state">
-	Describes the physical state of a button which provoked the button
+	Describes the physical state of a button that caused the button
 	event.
       </description>
       <entry name="released" value="0" summary="the button is not pressed"/>
@@ -1023,15 +1021,15 @@
       <description summary="mode switch event">
 	Notification that the mode was switched.
 
-	A mode applies to all buttons, rings and strips but a client is not
-	required to assign different actions for each mode. For example, a
-	client may have mode-specific button mappings but map the ring to
-	vertical scrolling in all modes. Mode indices start at 0.
+	A mode applies to all buttons, rings and strips simultaneously, but
+	a client is not required to assign different actions for each mode.
+	For example, a client may have mode-specific button mappings but map
+	the ring to vertical scrolling in all modes. Mode indices start at 0.
 
 	Switching modes is compositor-dependent. The compositor may provide
 	visual cues to the client about the mode, e.g. by toggling LEDs on
-	the tablet device. Mode-switching may be software-controlled or by
-	assigning one or more physical buttons. For example, on a Wacom
+	the tablet device. Mode-switching may be software-controlled or
+	controlled by one or more physical buttons. For example, on a Wacom
 	Intuos Pro, the button inside the ring may be assigned to switch
 	between modes.
 
@@ -1039,13 +1037,13 @@
 	previous mode, the client should immediately issue a
 	wp_tablet_pad.set_feedback request for each changed button.
 
-	If a ring or button action in the new mode differs from the action
+	If a ring or strip action in the new mode differs from the action
 	in the previous mode, the client should immediately issue a
 	wp_tablet_ring.set_feedback or wp_tablet_strip.set_feedback request
 	for each changed ring or strip.
       </description>
       <arg name="time" type="uint" summary="the time of the event with millisecond granularity"/>
-      <arg name="serial" type="uint"/>
+      <arg name="serial" type="uint" summary="serial number of the mode switch event"/>
       <arg name="mode" type="uint" summary="the new mode of the pad"/>
     </event>
 
@@ -1053,9 +1051,9 @@
       <description summary="enter event">
 	Notification that this pad is focused on the specified surface.
       </description>
-      <arg name="serial" type="uint"/>
+      <arg name="serial" type="uint" summary="serial number of the enter event"/>
       <arg name="tablet" type="object" interface="zwp_tablet_v2" summary="the tablet the pad is attached to"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="surface" type="object" interface="wl_surface" summary="surface the pad is focused on"/>
     </event>
 
     <event name="leave">
@@ -1063,8 +1061,8 @@
 	Notification that this pad is no longer focused on the specified
 	surface.
       </description>
-      <arg name="serial" type="uint"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="serial" type="uint" summary="serial number of the leave event"/>
+      <arg name="surface" type="object" interface="wl_surface" summary="surface the pad is no longer focused on"/>
     </event>
 
     <event name="removed">
