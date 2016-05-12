@@ -965,6 +965,9 @@
 	will not generate events visible to the client. Button indices start
 	at 0.
 
+	When the number of reserved buttons drops to zero, the
+	buttons_reserved array is an empty array.
+
 	This event may is sent in the initial burst of events before the
 	wp_tablet_pad.done event and/or at any later time when the
 	compositor changes the list of reserved buttons. This event is only
