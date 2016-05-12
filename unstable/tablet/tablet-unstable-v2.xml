@@ -1013,7 +1013,7 @@
 	Sent whenever the physical state of a button changes.
       </description>
       <arg name="time" type="uint" summary="the time of the event with millisecond granularity"/>
-      <arg name="button" type="uint" summary="button pressed"/>
+      <arg name="button" type="uint" summary="the index of the button that changed state"/>
       <arg name="state" type="uint" enum="button_state"/>
     </event>
 
