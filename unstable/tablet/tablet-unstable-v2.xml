@@ -539,6 +539,26 @@
       <arg name="clicks" type="int" summary="The wheel delta in discrete clicks"/>
     </event>
 
+    <enum name="button">
+      <description summary="physical button name">
+	Describes the physical button that produced the button event.
+      </description>
+      <entry name="unknown" value="0" summary="An unknown button"/>
+      <entry name="stylus1" value="1" summary="The primary button on a stylus-like tool"/>
+      <entry name="stylus2" value="2" summary="The secondary button on a stylus-like tool"/>
+      <entry name="stylus3" value="3" summary="The third button on a stylus-like tool"/>
+      <entry name="stylus4" value="4" summary="The forth button on a stylus-like tool"/>
+      <entry name="stylus5" value="5" summary="The fifth button on a stylus-like tool"/>
+      <entry name="stylus6" value="6" summary="The sixth button on a stylus-like tool"/>
+      <entry name="stylus7" value="7" summary="The seventh button on a stylus-like tool"/>
+      <entry name="stylus8" value="8" summary="The eighth button on a stylus-like tool"/>
+      <entry name="stylus9" value="9" summary="The ninth button on a stylus-like tool"/>
+      <entry name="left" value="10" summary="The left button on a mouse-like tool"/>
+      <entry name="right" value="11" summary="The right button on a mouse-like tool"/>
+      <entry name="middle" value="12" summary="The middle button on a mouse-like tool"/>
+      <entry name="thumb" value="13" summary="The thumb button on a mouse-like tool"/>
+    </enum>
+
     <enum name="button_state">
       <description summary="physical button state">
 	Describes the physical state of a button that produced the button event.
@@ -557,7 +577,7 @@
 	details.
       </description>
       <arg name="serial" type="uint"/>
-      <arg name="button" type="uint" summary="The button whose state has changed"/>
+      <arg name="button" type="uint" enum="button" summary="The button whose state has changed"/>
       <arg name="state" type="uint" enum="button_state" summary="Whether the button was pressed or released"/>
     </event>
 
