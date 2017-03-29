@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="gamedev_unstable_v1">
+  <copyright>
+    Copyright 2017 © Red Hat, Inc.
+
+    Permission is hereby granted, free of charge, to any person
+    obtaining a copy of this software and associated documentation files
+    (the "Software"), to deal in the Software without restriction,
+    including without limitation the rights to use, copy, modify, merge,
+    publish, distribute, sublicense, and/or sell copies of the Software,
+    and to permit persons to whom the Software is furnished to do so,
+    subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the
+    next paragraph) shall be included in all copies or substantial
+    portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+    NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+    BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+    ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+  </copyright>
+
+  <description summary="Wayland protocol for access to gaming devices">
+    This description provides a high-level overview of the interfaces
+    in this protocol. For details, see the protocol specification.
+
+    Contemporary gaming devices are varied and usually do not interact with
+    the windowing system. In many cases, a client requires direct access to
+    the device to access or interpret device-specific functionality.
+
+    This interface provides the ability for a compositor to pass a file
+    descriptor to the client. The compositor may restrict the type of device
+    designated as gaming device and it may restrict specific events from
+    being sent to the client (e.g. by masking the Home button on a gamepad).
+    Otherwise, a client should treat the device as if opened manually.
+
+    Multiple gaming devices may exists and assigned to different seats. The
+    top-level object of this protocol is a wp_gamedev_manager. A client may
+    request a wp_gamedev_seat for each seat. Actual devices are assigned to
+    this wp_gamedev_seat.
+
+    Once a compositor deems a device to be focused on the client or on a
+    client's surface it sends a wp_gamedev.focus_in event with a file
+    descriptor for this device. A compositor may arbitrarily revoke access
+    to the device by sending a wp_gamdev.focus_out. Additionally, a
+    compositor may invoke system functionality to restrict access to the
+    file descriptor, e.g. by using EVIOCMUTE on an evdev fd.
+
+    Otherwise, a client should treat the file descriptor as direct access to
+    the device for the duration of it having access.
+  </description>
+
+  <interface name="zwp_gamedev_manager_v1" version="1">
+    <description summary="controller object for gaming devices">
+      An object that provides access to the gaming devices available on this
+      system. All gaming devices are associated with a seat, to get access
+      to the actual devices, use wp_gamedev_manager.get_gamedev_seat.
+    </description>
+
+    <request name="get_gamedev_seat">
+      <description summary="get the gaming device seat">
+	Get the wp_gamedev_seat object for the given seat. This object
+	provides access to all gaming devices in this seat.
+      </description>
+      <arg name="gamedev_seat" type="new_id" interface="zwp_gamedev_seat_v1"/>
+      <arg name="seat" type="object" interface="wl_seat" summary="The wl_seat object to retrieve the gaming devices for" />
+    </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="release the memory for the gamedev manager object">
+	Destroy the wp_gamedev_manager object. Objects created from this
+	object are unaffected and should be destroyed separately.
+      </description>
+    </request>
+  </interface>
+
+  <interface name="zwp_gamedev_seat_v1" version="1">
+    <description summary="controller object for gaming devices of a seat">
+      An object that provides access to the gaming devices available on this
+      seat. After binding to this interface, the compositor sends a set of
+      wp_gamedev_seat.gamedev_added.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="release the memory for the gamedev seat object">
+	Destroy the wp_gamedev_seat object. Objects created from this
+	object are unaffected and should be destroyed separately.
+      </description>
+    </request>
+
+    <event name="gamedev_added">
+      <description summary="new device notification">
+	This event is sent whenever a new gaming device becomes available on
+	this seat. This event only provides the object id of the devices, any
+	static information about the gaming device (device name, vid/pid,
+	etc.) is sent through the wp_gamedev interface.
+
+	Which devices are gaming devices is a decision made by the compositor,
+	the protocol makes no guarantee that any specific device becomes available
+	as gaming device to a client.
+      </description>
+      <arg name="id" type="new_id" interface="zwp_gamedev_v1" summary="the newly added gaming device"/>
+    </event>
+  </interface>
+
+  <interface name="zwp_gamedev_v1" version="1">
+    <description summary="gaming device">
+      The wp_gamedev interface represents one gaming device. Access to a
+      gaming device may be restricted based on compositor policy.
+
+      A gaming device has a number of static characteristics, e.g. device
+      name and pid/vid. These capabilities are sent in an event sequence
+      after the wp_gamedev_seat.gamedev_added event. This initial event
+      sequence is terminated by a wp_gamedev.done event. This sequence is
+      sent only once and always before the first wp_gamedev.focus_in event.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the gamedev object">
+	This destroys the client's resource for this gamedev object.
+      </description>
+    </request>
+
+    <event name="name">
+      <description summary="gaming device name">
+	This event is sent in the initial burst of events before the
+	wp_gamedev.done event.
+
+	This event is optional, if the required information is not available
+	for this device the event is omitted.
+      </description>
+      <arg name="name" type="string" summary="the device name"/>
+    </event>
+
+    <event name="usb_id">
+      <description summary="gaming device USB vendor/product id">
+	This event is sent in the initial burst of events before the
+	wp_gamedev.done event.
+
+	This event is optional, if the required information is not available
+	for this device the event is omitted.
+      </description>
+      <arg name="vid" type="uint" summary="USB vendor id"/>
+      <arg name="pid" type="uint" summary="USB product id"/>
+    </event>
+
+    <event name="done">
+      <description summary="gaming device description events sequence complete">
+	This event is sent immediately to signal the end of the initial
+	burst of descriptive events. A client may consider the static
+	description of the device to be complete and finalize
+	initialization of the device.
+      </description>
+    </event>
+
+    <event name="removed">
+      <description summary="gaming device removed event">
+	Sent when the device has been removed from the system.
+
+	If the client currently has the device focus and the device is
+	removed, a wp_gamedev.focus_out event is sent before a removed
+	event. See wp_gamedev.focus_in for more details.
+
+	When this event is received, the client must wp_gamedev.destroy
+	the object.
+      </description>
+    </event>
+
+    <enum name="fd_type">
+      <description summary="Gaming device file descriptor types">
+	This enum specifies the format of the file descriptor passed to
+	clients with the wp_gamedev.focus_in event.
+      </description>
+      <entry name="evdev" value="0" summary="An evdev file descriptor" />
+    </enum>
+
+    <event name="focus_in">
+      <description summary="gaming device focus in event">
+	Notification that this client now has the focus and/or access to
+	this gaming device. The decision what consitutes focus left to the
+	compositor. For example, a compositor may tie joystick focus to the
+	wl_pointer focus of this seat. The protocol does not guarantee that
+	any specific client ever receives the focus for a gaming device.
+
+	The client is passed a file descriptor with access to this gaming
+	device. This file descriptor is valid until a subsequent
+	wp_gamedev.focus_out event. Upon wp_gamedev.focus_out, the
+	compositor may revoke the fd and further operations will fail.
+
+	However, due to potential race conditions a client must be able to
+	handle errors as if it opened the fd itself. No guarantee is
+	given that the wp_gamedev.focus_out event or wp_gamedev.removed
+	event are sent before the client encounters an error on the file
+	descriptor.
+
+	A compositor guarantees that the underlying device does not change
+	until a wp_gamedev.removed event. In other words, a client only
+	needs to query capabilities once on the first focus_in, regardless
+	of how many focus_out events follow.
+
+	If applicable, this event contains the surface that has the focus.
+	In some cases, the focus may not be tied to a specific client surface
+	but is given to the client on a global basis. In that case, the surface
+	is null.
+
+	The protocol guarantees that focus_in and focus_out always come in
+	pairs. If the client currently has the focus and the device is
+	removed, a focus_out event is sent to the client before the
+	wp_gamedev.removed event.
+      </description>
+      <arg name="serial" type="uint"/>
+      <arg name="fd" type="fd" summary="file descriptor to the gaming device"/>
+      <arg name="fd_type" type="uint" enum="fd_type" summary="fd type" />
+      <arg name="surface" type="object" interface="wl_surface" summary="The current surface that has the gaming device's focus" allow-null="true"/>
+    </event>
+
+    <event name="focus_out">
+      <description summary="gaming device focus out event">
+	Notification that this client no longer has focus and/or access to
+	this gaming device. Further reads from this device's file descriptor
+	will fail. The client must close(2) the file descriptor received in
+	the wp_gamedev.focus_in event.
+
+	This event does not mean the device was removed, merely that the
+	device is focused elsewhere. For device removal, see
+	wp_gamedev.removed.
+
+	See wp_gamedev.focus_in for more details.
+      </description>
+    </event>
+  </interface>
+</protocol>
+
+
