@@ -950,6 +950,21 @@
       </description>
       <arg name="buttons" type="array" summary="buttons in this group"/>
     </event>
+    
+
+    <!-- FIXME: there's no real index for the ring? we can tie it with the
+    mode group index, but then we assume only one ring per group?
+    and the mode group doesn't have an index either, so the compositor would
+    have to guarantee the startup order. we need the mode index so we can
+    associate between libwacom, I think.
+
+    if you're fancy enough, you can use libwacom to check for the mode
+    toggle button and reverse-group the rest from there (if button j is
+    Left=, then rings in the group J blah blah
+
+    intuos3 has 2 strips but only one group, so we need to allow for
+    multiple strips in the group (and have consistent indexing).
+    -->
 
     <event name="ring">
       <description summary="ring announced">
@@ -1139,6 +1154,14 @@
       </description>
       <arg name="buttons" type="uint" summary="the number of buttons"/>
     </event>
+
+    <!--  FIXME: there is nothing to connect the pad with the tablet, no USB
+      ID, only the path. we can get that information from libwacom, but
+      right now it's inconsistent - the tool has the serial, the tablet has
+      the USB id. 
+
+      ok nevermind, the information is in the  enter/leave event.
+      -->
 
     <event name="done">
       <description summary="pad description event sequence complete">
