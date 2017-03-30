@@ -149,6 +149,21 @@
       <arg name="pid" type="uint" summary="USB product id"/>
     </event>
 
+    <event name="property">
+      <description summary="gaming device capability notification">
+	This event is sent to notify the client of a custom property that
+	applies to this device. The property is a standard key/value store
+	in UTF-8 format, interpretation of both strings is left to the
+	client. The wayland protocol makes no guarantees about the content
+	of each string beyond its text encoding.
+
+	Compositors and clients need to agree on a dictionary of properties.
+	This dictionary is out of the scope of this protocol.
+      </description>
+      <arg name="property" type="string" summary="A UTF-8 encoded property name"/>
+      <arg name="value" type="string" summary="A UTF-8 encoded property value"/>
+    </event>
+
     <event name="done">
       <description summary="gaming device description events sequence complete">
 	This event is sent immediately to signal the end of the initial
