@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="inputfd_unstable_v1">
+  <copyright>
+    Copyright 2017 © Red Hat, Inc.
+
+    Permission is hereby granted, free of charge, to any person
+    obtaining a copy of this software and associated documentation files
+    (the "Software"), to deal in the Software without restriction,
+    including without limitation the rights to use, copy, modify, merge,
+    publish, distribute, sublicense, and/or sell copies of the Software,
+    and to permit persons to whom the Software is furnished to do so,
+    subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the
+    next paragraph) shall be included in all copies or substantial
+    portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+    NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+    BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+    ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+  </copyright>
+
+  <description summary="Wayland protocol for direct fd access to input devices">
+    This description provides a high-level overview of the interfaces
+    in this protocol. For details, see the protocol specification.
+
+    Some input devices do not interact with the windowing system. Examples
+    of such input devices are gaming controllers or 3D mice. In many cases,
+    a client requires direct access to the device to access or interpret
+    device-specific functionality.
+
+    This interface provides the ability for a compositor to pass a file
+    descriptor to the client. The compositor may restrict the type of device
+    designated as compatible device and it may restrict specific events from
+    being sent to the client (e.g. by masking the Home button on a gamepad).
+    Otherwise, a client should treat the device as if opened manually.
+
+    This interface divides devices into type-based categories, clients are
+    expected to only request access to devices that match the category they
+    require. As of version 1, this interface provides only a single
+    category: "gaming devices". Future categories of devices are expected to
+    re-use the same wp_inputfd_device interface, but may differ in the way
+    how to request them.
+
+    Multiple input devices of the same type may exists and assigned to
+    different seats. The top-level object of this protocol is a
+    wp_inputfd_manager. Dependent on the device type sought after, a client
+    may request a type-specific seat interface (e.g.
+    wp_inputfd_manager.get_seat_gamedev). This seat then provides the list
+    of devices for that category.
+
+    Once a compositor deems a device to be focused on the client or on a
+    client's surface it sends a wp_inputfd_device.focus_in event with a file
+    descriptor for this device. A compositor may arbitrarily revoke access
+    to the device by sending a wp_inputfd_gamedev.focus_out. Additionally, a
+    compositor may invoke system functionality to restrict access to the
+    file descriptor, e.g. by using EVIOCMUTE on an evdev fd.
+
+    Otherwise, a client should treat the file descriptor as direct access to
+    the device for the duration of it having access.
+  </description>
+
+  <interface name="zwp_inputfd_manager_v1" version="1">
+    <description summary="controller object for direct fd access input devices">
+      An object that provides access to the input devices available for
+      direct fd access on this system. All input devices are associated with
+      a seat, to get access to the actual devices, use one of the get_seat
+      requests, e.g. wp_inputfd_manager.get_seat_gamedev.
+    </description>
+
+    <request name="get_seat_gamedev">
+      <description summary="get the seat for gaming devices">
+	Get the wp_inputfd_seat object for the given seat. This object
+	provides access to all gaming devices in this seat.
+
+	The decision which device is a gaming device is made by the
+	compositor. The protocol makes no guarantees whether a particular
+	device is available through this interface.
+      </description>
+      <arg name="inputfd_seat" type="new_id" interface="zwp_inputfd_seat_v1"/>
+      <arg name="seat" type="object" interface="wl_seat" summary="The wl_seat object to retrieve the input devices for" />
+    </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="release the memory for the inputfd manager object">
+	Destroy the wp_inputfd_manager object. Objects created from this
+	object are unaffected and should be destroyed separately.
+      </description>
+    </request>
+  </interface>
+
+  <interface name="zwp_inputfd_seat_v1" version="1">
+    <description summary="controller object for input devices of a seat">
+      An object that provides access to the input devices available on this
+      seat for the requested type of device. After binding to this
+      interface, the compositor sends a set of wp_inputfd_seat.device_added
+      events for currently available devices and whenever a new device
+      becomes available.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="release the memory for the inputfd seat object">
+	Destroy the wp_inputfd_seat object. Objects created from this
+	object are unaffected and should be destroyed separately.
+      </description>
+    </request>
+
+    <event name="device_added">
+      <description summary="new device notification">
+	This event is sent whenever a new device becomes available on
+	this seat. This event only provides the object id of the devices,
+	any static information about the device (device name,
+	vid/pid, etc.) is sent through the wp_inputfd_device interface.
+
+	Which devices are compatible input devices for this seat is a
+	decision made by the compositor, the protocol makes no guarantee
+	that any specific device becomes available as inputfd device to a
+	client.
+      </description>
+      <arg name="id" type="new_id" interface="zwp_inputfd_device_v1" summary="the newly added device"/>
+    </event>
+  </interface>
+
+  <interface name="zwp_inputfd_device_v1" version="1">
+    <description summary="input fd device">
+      The wp_inputfd_device interface represents one device accessible
+      directly by an fd passed to the client.
+
+      A device has a number of static characteristics, e.g. device
+      name and pid/vid. These capabilities are sent in an event sequence
+      immediately after the wp_inputfd_seat.device_added event. This initial
+      event sequence is terminated by a wp_inputfd_device.done event. This
+      sequence is sent only once and always before the first
+      wp_inputfd_device.focus_in event.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the inputfd object">
+	This destroys the client's resource for this inputfd object.
+      </description>
+    </request>
+
+    <event name="name">
+      <description summary="device name">
+	The name is a UTF-8 encoded string with the device's name, intended
+	for presentation to the user.
+
+	This event is sent in the initial burst of events before the
+	wp_inputfd_device.done event.
+
+	This event is optional, if the required information is not available
+	for this device the event is omitted.
+      </description>
+      <arg name="name" type="string" summary="the device name"/>
+    </event>
+
+    <event name="usb_id">
+      <description summary="device USB vendor/product id">
+	This event is sent in the initial burst of events before the
+	wp_inputfd_device.done event.
+
+	This event is optional, if the required information is not available
+	for this device the event is omitted.
+      </description>
+      <arg name="vid" type="uint" summary="USB vendor id"/>
+      <arg name="pid" type="uint" summary="USB product id"/>
+    </event>
+
+    <event name="property">
+      <description summary="device capability notification">
+	This event is sent to notify the client of a custom property that
+	applies to this device. The property is a standard key/value store
+	in UTF-8 format, interpretation of both strings is left to the
+	client. The wayland protocol makes no guarantees about the content
+	of each string beyond its text encoding.
+
+	Compositors and clients need to agree on a dictionary of properties.
+	For example, a compositor may designate the device to be of
+	'joystick-type' 'gamepad'. This dictionary is out of the scope of
+	this protocol.
+      </description>
+      <arg name="property" type="string" summary="A UTF-8 encoded property name"/>
+      <arg name="value" type="string" summary="A UTF-8 encoded property value"/>
+    </event>
+
+    <event name="done">
+      <description summary="device description events sequence complete">
+	This event is sent immediately to signal the end of the initial
+	burst of descriptive events. A client may consider the static
+	description of the device to be complete and finalize
+	initialization of the device.
+      </description>
+    </event>
+
+    <event name="removed">
+      <description summary="device removed event">
+	Sent when the device has been removed from the system.
+
+	If the client currently has the device focus, a
+	wp_inputfd_device.focus_out event is sent before the removed event.
+	See wp_inputfd_device.focus_in for more details.
+
+	When this event is received, the client must wp_inputfd_device.destroy
+	the object.
+      </description>
+    </event>
+
+    <enum name="fd_type">
+      <description summary="Input fd device file descriptor types">
+	This enum specifies the format of the file descriptor passed to
+	clients with the wp_inputfd_device.focus_in event.
+      </description>
+      <entry name="evdev" value="0" summary="An evdev file descriptor" />
+    </enum>
+
+    <event name="focus_in">
+      <description summary="input fd device focus in event">
+	Notification that this client now has the focus and/or access to
+	this device. The decision what consitutes focus left to the
+	compositor. For example, a compositor may tie joystick focus to the
+	wl_pointer focus of this seat. The protocol does not guarantee that
+	any specific client ever receives the focus for a device.
+
+	The client is passed a file descriptor with access to this
+	device. This file descriptor is valid until a subsequent
+	wp_inputfd_device.focus_out event. Upon wp_inputfd_device.focus_out, the
+	compositor may revoke the fd and further operations will fail.
+
+	However, due to potential race conditions a client must be able to
+	handle errors as if it opened the fd itself. No guarantee is
+	given that the wp_inputfd_device.focus_out event or wp_inputfd_device.removed
+	event are sent before the client encounters an error on the file
+	descriptor.
+
+	A compositor guarantees that the underlying device does not change
+	until a wp_inputfd_device.removed event. In other words, if the fd
+	type allows querying capabilities through the fd, a client needs to
+	do so only once at the first focus_in. Subsequent focus_in events
+	will provide the same capabilities.
+
+	If applicable, this event contains the surface that has the focus.
+	In some cases, the focus may not be tied to a specific client surface
+	but is given to the client independent of any surface. In that case,
+	the surface is null.
+
+	The protocol guarantees that focus_in and focus_out always come in
+	pairs. If the client currently has the focus and the device is
+	removed, a focus_out event is sent to the client before the
+	wp_inputfd_device.removed event.
+      </description>
+      <arg name="serial" type="uint"/>
+      <arg name="fd" type="fd" summary="file descriptor to the device"/>
+      <arg name="fd_type" type="uint" enum="fd_type" summary="fd type" />
+      <arg name="surface" type="object" interface="wl_surface" summary="The current surface that has the device's focus" allow-null="true"/>
+    </event>
+
+    <event name="focus_out">
+      <description summary="input fd device focus out event">
+	Notification that this client no longer has focus and/or access to
+	this device. Further reads from this device's file descriptor
+	will fail. The client must close(2) the file descriptor received in
+	the wp_inputfd_device.focus_in event.
+
+	This event does not mean the device was removed, merely that the
+	device is focused elsewhere. For device removal, see
+	wp_inputfd_device.removed.
+
+	See wp_inputfd_device.focus_in for more details.
+      </description>
+    </event>
+  </interface>
+</protocol>
+
+

@@ -4,6 +4,7 @@ unstable_protocols =								\
 	unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml			\
 	unstable/text-input/text-input-unstable-v1.xml				\
 	unstable/input-method/input-method-unstable-v1.xml			\
+	unstable/inputfd/inputfd-unstable-v1.xml				\
 	unstable/xdg-shell/xdg-shell-unstable-v5.xml				\
 	unstable/xdg-shell/xdg-shell-unstable-v6.xml				\
 	unstable/relative-pointer/relative-pointer-unstable-v1.xml		\
