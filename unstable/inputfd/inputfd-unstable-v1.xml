@@ -40,24 +40,15 @@
     being sent to the client (e.g. by masking the Home button on a gamepad).
     Otherwise, a client should treat the device as if opened manually.
 
-    This interface divides devices into type-based categories, clients are
-    expected to only request access to devices that match the category they
-    require. As of version 1, this interface provides only a single
-    category: "gaming devices". Future categories of devices are expected to
-    re-use the same wp_inputfd_device interface, but may differ in the way
-    how to request them.
-
     Multiple input devices of the same type may exists and assigned to
     different seats. The top-level object of this protocol is a
-    wp_inputfd_manager. Dependent on the device type sought after, a client
-    may request a type-specific seat interface (e.g.
-    wp_inputfd_manager.get_seat_gamedev). This seat then provides the list
-    of devices for that category.
+    wp_inputfd_manager, a client must request the interface for a given seat.
+    This object then provides the list of devices for that category.
 
     Once a compositor deems a device to be focused on the client or on a
     client's surface it sends a wp_inputfd_device.focus_in event with a file
     descriptor for this device. A compositor may arbitrarily revoke access
-    to the device by sending a wp_inputfd_gamedev.focus_out. Additionally, a
+    to the device by sending a wp_inputfd.focus_out. Additionally, a
     compositor may invoke system functionality to restrict access to the
     file descriptor, e.g. by using EVIOCMUTE on an evdev fd.
 
@@ -69,18 +60,18 @@
     <description summary="controller object for direct fd access input devices">
       An object that provides access to the input devices available for
       direct fd access on this system. All input devices are associated with
-      a seat, to get access to the actual devices, use one of the get_seat
-      requests, e.g. wp_inputfd_manager.get_seat_gamedev.
+      a seat, to get access to the actual devices, use
+      wp_inputfd_manager.get_seat.
     </description>
 
-    <request name="get_seat_gamedev">
-      <description summary="get the seat for gaming devices">
+    <request name="get_seat">
+      <description summary="get the seat for receiving device notifications">
 	Get the wp_inputfd_seat object for the given seat. This object
-	provides access to all gaming devices in this seat.
+	provides access to all exposed devices in this seat.
 
-	The decision which device is a gaming device is made by the
-	compositor. The protocol makes no guarantees whether a particular
-	device is available through this interface.
+	The decision which device is available through this interface is
+	made by the compositor. The protocol makes no guarantees whether a
+	particular device is available through this interface.
       </description>
       <arg name="inputfd_seat" type="new_id" interface="zwp_inputfd_seat_v1"/>
       <arg name="seat" type="object" interface="wl_seat" summary="The wl_seat object to retrieve the input devices for" />
@@ -137,6 +128,12 @@
       event sequence is terminated by a wp_inputfd_device.done event. This
       sequence is sent only once and always before the first
       wp_inputfd_device.focus_in event.
+
+      A device is the representation of a logical device as exposed by the
+      underlying system and may only represent parts of a single physical
+      input device. It is the client's task to identify the device as part
+      of a physical device and to group the logical devices together as
+      appropriate.
     </description>
 
     <request name="destroy" type="destructor">
@@ -183,6 +180,22 @@
 	For example, a compositor may designate the device to be of
 	'joystick-type' 'gamepad'. This dictionary is out of the scope of
 	this protocol.
+
+	The protocol makes no guarantee that a compositor supports a
+	specific dictionary or dictionary version. A client must be able to
+	a) handle properties of unknown name b) handle properties of
+	unknown value, and c) handle multiple events for the same property
+	with different values.
+
+	While the protocol is in development, the autoritative dictionary is
+	located at: https://github.com/whot/inputfd-property-authority
+
+	Property events are always optional, a client must assume reasonable
+	defaults if the propety event is not sent. The dictionary of
+	properties may specify the expected default value for a property.
+
+	Properties describe static capabilities of the device only, a
+	property is valid until the device is removed.
       </description>
       <arg name="property" type="string" summary="A UTF-8 encoded property name"/>
       <arg name="value" type="string" summary="A UTF-8 encoded property value"/>
@@ -263,7 +276,7 @@
       <description summary="input fd device focus out event">
 	Notification that this client no longer has focus and/or access to
 	this device. Further reads from this device's file descriptor
-	will fail. The client must close(2) the file descriptor received in
+	may fail. The client must close(2) the file descriptor received in
 	the wp_inputfd_device.focus_in event.
 
 	This event does not mean the device was removed, merely that the
