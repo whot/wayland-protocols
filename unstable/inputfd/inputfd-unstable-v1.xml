@@ -238,18 +238,6 @@
 	clients with the wp_inputfd_device.focus_in event.
       </description>
       <entry name="evdev" value="0" summary="An evdev file descriptor" />
-      <entry name="pipe_evdev" value="1" summary="A unidirectional pipe talking evdev">
-	<description>
-	  This file descriptor type describes a unidirectional data channel
-	  (e.g. pipe(2)) that sends events using the evdev protocol. Unlike
-	  a normal evdev file descriptor this data channel is a) read- or
-	  write-only but not both and b) any evdev-specific ioctl() will
-	  fail on the file descriptor.
-
-	  This file descriptor can be used to read or write evdev-style
-	  struct input_events.
-	</description>
-      </entry>
     </enum>
 
     <event name="focus_in">
@@ -260,12 +248,10 @@
 	wl_pointer focus of this seat. The protocol does not guarantee that
 	any specific client ever receives the focus for a device.
 
-	The client is passed two file descriptors with access to this
-	device, one for read operations, one for write operations. The read
-	and the write file descriptor may be the same fd.  These file
-	descriptors are valid until a subsequent wp_inputfd_device.focus_out
-	event. Upon wp_inputfd_device.focus_out, the compositor may revoke
-	the fds and further operations will fail.
+	The client is passed a file descriptor with access to this
+	device. This file descriptor is valid until a subsequent
+	wp_inputfd_device.focus_out event. Upon wp_inputfd_device.focus_out, the
+	compositor may revoke the fd and further operations will fail.
 
 	However, due to potential race conditions a client must be able to
 	handle errors as if it opened the fd itself. No guarantee is
@@ -275,9 +261,9 @@
 
 	A compositor guarantees that the underlying device does not change
 	until a wp_inputfd_device.removed event. In other words, if the fd
-	type allows querying capabilities through one of the fds, a client
-	needs to do so only once at the first focus_in. Subsequent focus_in
-	events will provide the same capabilities.
+	type allows querying capabilities through the fd, a client needs to
+	do so only once at the first focus_in. Subsequent focus_in events
+	will provide the same capabilities.
 
 	If applicable, this event contains the surface that has the focus.
 	In some cases, the focus may not be tied to a specific client surface
@@ -289,10 +275,9 @@
 	removed, a focus_out event is sent to the client before the
 	wp_inputfd_device.removed event.
       </description>
-      <arg name="read_type" type="uint" enum="fd_type" summary="fd type for read descriptor" />
-      <arg name="read" type="fd" summary="read-file descriptor to the device"/>
-      <arg name="write_type" type="uint" enum="fd_type" summary="fd type for write descriptor" />
-      <arg name="write" type="fd" summary="write-file descriptor to the device"/>
+      <arg name="serial" type="uint"/>
+      <arg name="fd" type="fd" summary="file descriptor to the device"/>
+      <arg name="fd_type" type="uint" enum="fd_type" summary="fd type" />
       <arg name="surface" type="object" interface="wl_surface" summary="The current surface that has the device's focus" allow-null="true"/>
     </event>
 
@@ -300,7 +285,7 @@
       <description summary="input fd device focus out event">
 	Notification that this client no longer has focus and/or access to
 	this device. Further reads from this device's file descriptor
-	may fail. The client must close(2) the file descriptors received in
+	may fail. The client must close(2) the file descriptor received in
 	the wp_inputfd_device.focus_in event.
 
 	This event does not mean the device was removed, merely that the
