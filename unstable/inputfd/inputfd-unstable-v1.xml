@@ -238,6 +238,17 @@
 	clients with the wp_inputfd_device.focus_in event.
       </description>
       <entry name="evdev" value="0" summary="An evdev file descriptor" />
+      <entry name="socket_evdev" value="1" summary="A bidirectional socket talking evdev">
+	<description>
+	  This file descriptor type describes a bidirectional data channel
+	  (e.g. an AF_UNIX socket) that sends events using the evdev
+	  protocol. Unlike a normal evdev file descriptor any evdev-specific
+	  ioctl() will fail on the file descriptor.
+
+	  This file descriptor can be used to read or write evdev-style
+	  struct input_events.
+	</description>
+      </entry>
     </enum>
 
     <event name="focus_in">
